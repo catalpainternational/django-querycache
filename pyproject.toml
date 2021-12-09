@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "django-querycache"
+version = "0.1.0"
+description = "Cache manager for Django querysets and serialization"
+authors = ["Joshua Brooks <josh.vdbroek@gmail.com>"]
+license = "GPLv3"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+[tool.poetry.dev-dependencies]
+black = "^21.12b0"
+pytest = "^6.2.5"
+isort = "^5.10.1"
+flake8 = "^4.0.1"
+pre-commit = "^2.16.0"
+django-stubs = "^1.9.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = 'black'
+
+[tool.black]
+# 119 is the Django recommendation
+# https://docs.djangoproject.com/en/dev/internals/contributing/writing-code/coding-style/
+line-length = 119
+target-version = ['py38']
+include = '\.pyi?$'
+exclude = '''
+/(
+  | \.git
+  | \.mypy_cache
+  | \.tox
+)/
+'''
