@@ -310,6 +310,17 @@ class TimeStampedFingerprint(Fingerprinting):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        if "fingerprint_expiry" not in kwargs:
+            # The default expiry of 30s is probably too much for
+            # the very low cost of a single last-modified
+            # field, here we reduce it to 100ms
+            self.fingerprint_expiry = 0.1
+
+        # Set different hash keys for Timestamped vs hash key queries
+        # Mostly of interest in testing
+        self.cache_key = f"{self.cache_key}_ts"
+        self.time_cache_key =  f"{self.time_cache_key}_ts"
+
         # Use the specified column value, if provided;
         # otherwise search for a column with an 'auto_now' field
 
