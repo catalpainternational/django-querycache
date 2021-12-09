@@ -337,11 +337,74 @@ class TimeStampedFingerprint(Fingerprinting):
         logger.debug("using %s as timestamp column", self.timestamp_column)
 
     def query_fingerprint(self):
+        """
+        Returns the last updated time of the table or query rather than the
+        hash of all query rows
+        """
         ordered_query = self.query.order_by(self.timestamp_column)
         last_updated = ordered_query.last()
         last_timestamp = getattr(last_updated, self.timestamp_column)  # type: Union[datetime.date, datetime.datetime]
         # Expect a `isoformat` on this field
         return last_timestamp.isoformat()
+
+
+class ModelTimeStampedFingerprint(TimeStampedFingerprint):
+    """
+    This class filters the "has_changed" return to check the last updated
+    time for the query's whole model before running the fingerprint query
+    which may have a slower result
+    In many cases this should return faster than timestamp query over a few rows
+    as it avoids the filtering steps; in the worst case it adds one additional
+    but very fast query so it should probably be used as the default where
+    a model has a timestamped column unless you have a huge table and
+    a simple query
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init(*args, **kwargs)
+        self.table_cache_key = f"{self.cache_key}_table"
+        self.table_time_cache_key = f"{self.time_cache_key}_table"
+
+    def _get_table_fingerprint(self):
+        ordered_query = self.model.order_by(self.timestamp_column)
+        last_updated = ordered_query.last()
+        last_timestamp = getattr(last_updated, self.timestamp_column)  # type: Union[datetime.date, datetime.datetime]
+        # Expect a `isoformat` on this field
+        return last_timestamp.isoformat()
+
+    @property
+    def _cached_table_fingerprint(self):
+        """
+        Return the cached hash of the query's fingerprinting result
+        """
+        return self.cache.get(self.table_cache_key)
+
+    @_cached_table_fingerprint.setter
+    def _cached_table_fingerprint(self, value):
+        """
+        Sets the cached key and also the "sentinel" value of the last time the
+        key was changed for time based validity checks
+        """
+        self.cache.set(self.table_time_cache_key, datetime.datetime.now().timestamp())
+        self.cache.set(self.table_cache_key, value)
+
+    @_cached_table_fingerprint.deleter
+    def _cached_table_fingerprint(self):
+        self.cache.delete(self.table_time_cache_key)
+        self.cache.delete(self.table_cache_key)
+
+    def update_required(self, force_check=False) -> bool:
+        """
+        Shortcut if the table has not changed since last checked
+        """
+        table_fp = self._get_table_fingerprint()
+        if table_fp == self._cached_table_fingerprint:
+            self._cached_table_fingerprint = table_fp
+            logger.debug("Table not updated")
+            return False
+        self._cached_table_fingerprint = table_fp
+        logger.debug("Table may have changed. Now checking if query has changed")
+        return super().update_required(force_check=force_check)
 
 
 class CachedQuerySet:
