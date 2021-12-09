@@ -361,7 +361,7 @@ class ModelTimeStampedFingerprint(TimeStampedFingerprint):
     """
 
     def __init__(self, *args, **kwargs):
-        super().__init(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.table_cache_key = f"{self.cache_key}_table"
         self.table_time_cache_key = f"{self.time_cache_key}_table"
 
