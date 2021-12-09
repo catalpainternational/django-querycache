@@ -319,7 +319,7 @@ class TimeStampedFingerprint(Fingerprinting):
         # Set different hash keys for Timestamped vs hash key queries
         # Mostly of interest in testing
         self.cache_key = f"{self.cache_key}_ts"
-        self.time_cache_key =  f"{self.time_cache_key}_ts"
+        self.time_cache_key = f"{self.time_cache_key}_ts"
 
         # Use the specified column value, if provided;
         # otherwise search for a column with an 'auto_now' field
