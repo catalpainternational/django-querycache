@@ -50,11 +50,11 @@ jobs:
       - name: Code Quality
         run: poetry run black django_querycache --check
 
-      - name: Code Quality
-        run: poetry run flake8 django_querycache
+      - name: Code Quality: isort
+        run: poetry run isort django_querycache --check --diff
 
-      - name: Code Quality
+      - name: Code Quality: mypy
         run: poetry run mypy django_querycache
 
-      - name: Code Quality
+      - name: Code Quality: flake8
         run: poetry run flake8 django_querycache
