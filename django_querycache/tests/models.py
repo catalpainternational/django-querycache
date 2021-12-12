@@ -22,13 +22,13 @@ def category():
 
 
 class ModelOfRandomness(models.Model):
-    some_text = models.TextField(default=secrets.token_urlsafe)  # type: str
-    category = models.TextField(default=category)  # type: str
-    point_field = MultiPolygonField(default=poly)  # type: Any
+    some_text = models.TextField(default=secrets.token_urlsafe)
+    category = models.TextField(default=category)
+    point_field = MultiPolygonField(default=poly)
 
 
 class ModelOfRandomnessWithLastUpdated(models.Model):
-    some_text = models.TextField(default=secrets.token_urlsafe)  # type: str
-    category = models.TextField(default=category)  # type: str
-    point_field = MultiPolygonField(default=poly)  # type: Any
-    last_updated = models.DateTimeField(auto_now=True)  # type: datetime
+    some_text = models.TextField(default=secrets.token_urlsafe)
+    category = models.TextField(default=category)
+    point_field = MultiPolygonField(default=poly)
+    last_updated = models.DateTimeField(auto_now=True)

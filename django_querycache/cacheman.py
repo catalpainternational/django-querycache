@@ -421,7 +421,8 @@ class ModelTimeStampedFingerprint(TimeStampedFingerprint):
             return False
         self._cached_table_fingerprint = table_fp
         logger.debug("Table may have changed. Now checking if query has changed")
-        return super().update_required(force_check=force_check)
+        required = super().update_required(force_check=force_check)  # type: bool
+        return required
 
 
 class CachedQuerySet:
@@ -604,5 +605,5 @@ class GeoJsonCachedQuerySet(CachedQuerySet):
         List[Feature]
             Serialized features in GeoJSON format
         """
-        features = super().get_with_update()
+        features = super().get_with_update()  # type: List[Feature]
         return features

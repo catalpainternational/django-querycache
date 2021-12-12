@@ -230,5 +230,27 @@ jobs:
       - name: Install library
         run: poetry install --no-interaction
 
+      - name: Install OS level dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install binutils libproj-dev gdal-bin python3-psycopg2
+
       - name: Run Tests
         run: poetry run django_querycache/runtests.py
+
+      # Service containers to run postgres
+      services:
+          # Label used to access the service container
+          postgres:
+              # Docker Hub image
+              image: postgis/postgis:12-3.1
+              env:
+                  POSTGRES_PASSWORD: post1233
+              # Set health checks to wait until postgres has started
+              options: >-
+                  --health-cmd pg_isready
+                  --health-interval 10s
+                  --health-timeout 5s
+                  --health-retries 5
+              ports:
+                  - 49158:5432
