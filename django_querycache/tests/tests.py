@@ -3,6 +3,7 @@ import logging
 # Create your tests here.
 from time import sleep
 
+from django.core.cache import cache
 from django.db.models import Func, JSONField
 from django.test import TestCase
 from tests.models import ModelOfRandomness, ModelOfRandomnessWithLastUpdated
@@ -123,6 +124,7 @@ class TimedTestCase(TestCase):
 
 class CachedQuerySetTestCase(TestCase):
     def setUp(self):
+        cache.clear()
         for n in range(5):
             ModelOfRandomness().save()
             ModelOfRandomnessWithLastUpdated().save()
