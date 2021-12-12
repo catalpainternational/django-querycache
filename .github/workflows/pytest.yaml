@@ -3,7 +3,7 @@ name: CI
 on: [push]
 
 jobs:
-  Code Quality:
+  code-quality:
     runs-on: ubuntu-latest
     steps:
       #----------------------------------------------
@@ -58,7 +58,7 @@ jobs:
       - name: Code Quality flake8
         run: poetry run flake8 django_querycache
 
-  Run Tests:
+  run-tests:
     runs-on: ubuntu-latest
     steps:
       #----------------------------------------------
