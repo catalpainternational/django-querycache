@@ -33,6 +33,10 @@ hstring = str  # Declare where we expect a hex encoded string of length 8
 InputModel = Union[Model, QuerySet, Tuple[str, str]]  # Input models to these functions can take a number of forms
 
 
+def utcnow():
+    return datetime.datetime.now(datetime.timezone.utc)
+
+
 def inputmodel_parse(inputthing: InputModel) -> Tuple[QuerySet, Model]:
     """
     Parameters
@@ -214,7 +218,7 @@ class Fingerprinting:
         Sets the cached key and also the "sentinel" value of the last time the
         key was changed for time based validity checks
         """
-        self.cache.set(self.time_cache_key, datetime.datetime.now().timestamp())
+        self.cache.set(self.time_cache_key, utcnow().timestamp())
         self.cache.set(self.cache_key, value)
 
     @_cached_fingerprint.deleter
@@ -341,8 +345,16 @@ class TimeStampedFingerprint(Fingerprinting):
         Returns the last updated time of the table or query rather than the
         hash of all query rows
         """
-        ordered_query = self.query.order_by(self.timestamp_column)
+        try:
+            ordered_query = self.query.order_by(self.timestamp_column)
+        except TypeError as E:
+            logger.debug(f"Encountered exception: {E}")
+            logger.debug("Fall back to last_modified query for the whole model")
+            ordered_query = self.model.objects.order_by(self.timestamp_column)
         last_updated = ordered_query.last()
+        if not last_updated:
+            logger.debug("Enpty query")
+            return utcnow()
         last_timestamp = getattr(last_updated, self.timestamp_column)  # type: Union[datetime.date, datetime.datetime]
         # Expect a `isoformat` on this field
         return last_timestamp.isoformat()
@@ -366,11 +378,16 @@ class ModelTimeStampedFingerprint(TimeStampedFingerprint):
         self.table_time_cache_key = f"{self.time_cache_key}_table"
 
     def _get_table_fingerprint(self):
-        ordered_query = self.model.order_by(self.timestamp_column)
+        ordered_query = self.query.order_by(self.timestamp_column)
         last_updated = ordered_query.last()
+        if not last_updated:
+            logger.debug("Empty query")
+            return utcnow()
         last_timestamp = getattr(last_updated, self.timestamp_column)  # type: Union[datetime.date, datetime.datetime]
         # Expect a `isoformat` on this field
-        return last_timestamp.isoformat()
+        stamp = last_timestamp.isoformat()
+        logger.debug(stamp)
+        return stamp
 
     @property
     def _cached_table_fingerprint(self):
@@ -385,7 +402,7 @@ class ModelTimeStampedFingerprint(TimeStampedFingerprint):
         Sets the cached key and also the "sentinel" value of the last time the
         key was changed for time based validity checks
         """
-        self.cache.set(self.table_time_cache_key, datetime.datetime.now().timestamp())
+        self.cache.set(self.table_time_cache_key, utcnow().timestamp())
         self.cache.set(self.table_cache_key, value)
 
     @_cached_table_fingerprint.deleter
