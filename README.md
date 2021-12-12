@@ -17,7 +17,7 @@ Takes a Django model, queryset or (app_name, model_name) tuple and optional para
 
 ## GeoJsonCachedQuerySet
 
-This is a special form of CachedQuerySet which shoould generate valid GeoJSON features from a model or queryset. Note that the geometry field is expected to be a GeoJSON field not a geometry field.
+This is a special form of CachedQuerySet which should generate valid GeoJSON features from a model or queryset. Note that the geometry field is expected to be a GeoJSON field not a geometry field.
 
 ## Development
 

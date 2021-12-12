@@ -8,9 +8,7 @@ Fingerprinting and serializer caching for Django models
 """
 
 import datetime
-import functools
 import logging
-import time
 from functools import reduce
 from hashlib import md5
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
@@ -72,21 +70,6 @@ def query_to_key(query: QuerySet, suffix: str = "") -> str:
     query_hex = md5(query.query.sql_with_params()[0].encode()).hexdigest()[:4]
     params_hex = md5("".join(map(str, query.query.sql_with_params()[1])).encode()).hexdigest()[:4]
     return f"{query.query.base_table}_{query_hex}{params_hex}{suffix}"
-
-
-def timefunc(func):
-    """Decorator function to log time taken by a function (in ms)"""
-
-    @functools.wraps(func)
-    def time_closure(*args, **kwargs):
-        """Wrapped function will log the ms the function took"""
-        start = time.perf_counter()
-        result = func(*args, **kwargs)
-        time_elapsed = time.perf_counter() - start
-        logger.info(f"Function: {func.__name__}, Time: {(time_elapsed * 1000):.1f} ms")
-        return result
-
-    return time_closure
 
 
 def get_query_cache(cache_alias: str = "default"):
@@ -272,7 +255,6 @@ class Fingerprinting:
 
         return reduce(hexxor, row_fingerprints(), "00000000")
 
-    @timefunc
     def update_required(self, force_check=False) -> bool:
         """
         Return whether the cached query is considered "dirty" and
@@ -496,7 +478,6 @@ class CachedQuerySet:
         logger.debug("Refreshing cache for %s", self.cache_key)
         self.cache.set(self.cache_key, value)
 
-    @timefunc
     def get_with_update(self) -> Any:
         """
         Return the cached query if fresh else
@@ -527,7 +508,6 @@ class CachedQuerySet:
         else:
             logger.info("Fingerprint was recent or unchanged")
 
-    @timefunc
     def update_cache(self):
         if self._cache_is_dummy:
             return
@@ -573,8 +553,7 @@ class GeoJsonCachedQuerySet(CachedQuerySet):
         """
         return {field: getattr(item, field) for field in self.geojson_props}
 
-    @timefunc
-    def get_serialized_query(self) -> List[Feature]:
+    def get_serialized_query(self) -> List[Feature]:  # type: ignore
         """
         Django has a built in geometry serializer
         It does not work here because it requires geom to be
@@ -594,7 +573,6 @@ class GeoJsonCachedQuerySet(CachedQuerySet):
             for item in self.query
         ]
 
-    @timefunc
     def features(self) -> List[Feature]:
         """
         This will update the features in the cache if necessary and return them
