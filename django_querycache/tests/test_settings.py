@@ -21,14 +21,16 @@ LOGGING = {
     "disable_existing_loggers": False,
     "handlers": {
         "console": {
+            "class": "rich.logging.RichHandler",
+            "formatter": "rich",
             "level": "DEBUG",
-            "class": "logging.StreamHandler",
         }
     },
+    "formatters": {"rich": {"datefmt": "[%X]"}},
     "loggers": {
         "django": {
             "handlers": ["console"],
-            "level": "DEBUG",  # change to DEBUG to see all queries
+            "level": "WARN",  # change to DEBUG to see all queries
             "propagate": True,
         },
         "django_querycache": {"handlers": ["console"], "level": "DEBUG", "propagate": True},
