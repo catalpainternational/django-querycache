@@ -1,7 +1,8 @@
-
 # django-querycache
 
 Cache manager for Django querysets / serialization
+
+This combines Django's cache mechanism, a queryset / model and a serialization format, in order that you don't need to query or serialize data which is (according to either timestamp or MD5 sum of the rows in your query) unchanged
 
 ## Fingerprinting
 
@@ -21,9 +22,33 @@ This is a special form of CachedQuerySet which should generate valid GeoJSON fea
 
 ## Development
 
-pre-commit is nice
+This project uses poetry for deploment
 
-'''bash
+Optional (but recommended): Install `pre-commit` with
+
+```bash
 pip install pre-commit
 pre-commit install
-'''
+```
+
+## Publishing
+
+- Bump the `pyproject.yaml` version number
+- Run `poetry build`
+- Run `poetry publish`
+
+You may need to be added as a contributor on pypi - if so please ask @joshbrooks to add you
+
+##  Testing
+
+From the root directory run tests with
+
+```bash
+poetry run django_querycache/runtests.py
+```
+
+This uses the test setting in `tests`. You may wish to set an env variable for a different settings if you want to use a different setup (note tests use the postgis container specified in the github actions
+
+### Github Actions
+
+Github actions run a test suite for code clarity (black, isort, flake8, mypy) as well as the django tests above
