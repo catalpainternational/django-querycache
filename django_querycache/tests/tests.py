@@ -107,9 +107,6 @@ class TimedTestCase(TestCase):
             ModelTimeStampedFingerprint(ModelOfRandomness)
 
     def test_timestampedfingerprint(self):
-        """
-        Calling on a model w/o a timestamp field should raise a ValueError
-        """
         fp = ModelTimeStampedFingerprint(ModelOfRandomnessWithLastUpdated, fingerprint_expiry=-1)
 
         self.assertTrue(fp.update_required())
@@ -119,6 +116,21 @@ class TimedTestCase(TestCase):
         # the fingerprint has changed to the last timestamp
         m = ModelOfRandomnessWithLastUpdated.objects.last()
         m.save()
+        self.assertTrue(fp.update_required())
+
+    def test_fingerprint_changes_on_delete(self):
+        """
+        Deleted fields should cause "Change Required"
+        """
+        fp = ModelTimeStampedFingerprint(ModelOfRandomnessWithLastUpdated, fingerprint_expiry=-1)
+        self.assertTrue(fp.update_required())
+        self.assertFalse(fp.update_required())
+
+        # Going to delete the oldest fp
+        ModelOfRandomnessWithLastUpdated.objects.order_by("last_updated").first().delete()
+        sleep(0.01)
+
+        # This should now say that updates are required
         self.assertTrue(fp.update_required())
 
 
