@@ -1,5 +1,7 @@
 from typing import Any, Dict, List, Optional, Tuple, TypedDict, Union
 
+from django.db import models
+
 
 class IndicatorRow(TypedDict):
     """
@@ -44,3 +46,9 @@ class Feature(TypedDict):
 class FeatureCollection(TypedDict):
     type: str
     features: List[Feature]
+
+
+hstring = str  # Declare where we expect a hex encoded string of length 8
+InputModel = Union[
+    models.Model, models.QuerySet, Tuple[str, str]
+]  # Input models to these functions can take a number of forms
