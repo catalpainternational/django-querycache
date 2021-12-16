@@ -165,15 +165,21 @@ class TestFullHashTestCase(TestCase):
     Test that we can fetch the "full hash" of a table if desired for greater accuracy
     """
 
-    def test_long_fingerprint(self):
-        # A fingerprint can be generated from a model
-        fp_from_model = Fingerprinting(ModelOfRandomness)
+    def setUp(self):
+        for n in range(5):
+            ModelOfRandomness().save()
 
-        # A fingerprint can be generated from a model
+    def test_long_fingerprint(self):
+        """
+        A lng fingerprint should be 32 chars
+        A short fingerprint should be 8 chars
+        The output of a short fingerprint should
+        be the same as the first 8 chars of the output
+        of a long fingerprint
+        """
+        fp_from_model = Fingerprinting(ModelOfRandomness)
         fp_from_model_long = Fingerprinting(ModelOfRandomness, long_hash=True)
 
         self.assertEqual(fp_from_model_long.query_fingerprint()[:8], fp_from_model.query_fingerprint())
         self.assertEqual(len(fp_from_model.query_fingerprint()), 8)
         self.assertEqual(len(fp_from_model_long.query_fingerprint()), 32)
-
-        logger.debug(fp_from_model.query_fingerprint())

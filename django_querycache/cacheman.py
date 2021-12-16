@@ -116,7 +116,7 @@ class RowHash(RowFullHash):
     This returns the md5 hash, truncated to 8 characters for easier handling.
     """
 
-    template = 'substring(%(function)s("%(table)s"::text) from 0 for 8)'
+    template = 'substring(%(function)s("%(table)s"::text) for 8)'
 
 
 class SomeColsFullHash(RowFullHash):
@@ -124,7 +124,7 @@ class SomeColsFullHash(RowFullHash):
     Trick to return the md5sum of only some columns
     """
 
-    template = "substring(%(function)s(%(expressions)s) from 0 for 8)"
+    template = "substring(%(function)s(%(expressions)s) for 8)"
 
     def as_sql(self, compiler, connection, function=None, template=None, arg_joiner="||", **extra_context):
         """
