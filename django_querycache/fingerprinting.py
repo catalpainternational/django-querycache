@@ -1,11 +1,13 @@
 import datetime
 import logging
 from functools import reduce
+from hashlib import md5
 from typing import Iterable, List, Optional, Union
 
 from django.core.cache import caches
 from django.core.cache.backends.dummy import DummyCache
 from django.db.models import F, Func
+from django.db.models.aggregates import Count, Max
 from hashfunctions import RowFullHash, RowHash, SomeColsFullHash, SomeColsHash
 from type_annotations import InputModel, hstring
 from utils import get_query_cache, inputmodel_parse, query_to_key, utcnow
@@ -211,19 +213,9 @@ class TimeStampedFingerprint(Fingerprinting):
         Returns the last updated time of the table or query rather than the
         hash of all query rows
         """
-        try:
-            ordered_query = self.query.order_by(self.timestamp_column)
-        except TypeError as E:
-            logger.debug(f"Encountered exception: {E}")
-            logger.debug("Fall back to last_modified query for the whole model")
-            ordered_query = self.model.objects.order_by(self.timestamp_column)
-        last_updated = ordered_query.last()
-        if not last_updated:
-            logger.debug("Enpty query")
-            return utcnow()
-        last_timestamp = getattr(last_updated, self.timestamp_column)  # type: Union[datetime.date, datetime.datetime]
-        # Expect a `isoformat` on this field
-        return last_timestamp.isoformat()
+        agg = self.query.aggregate(Count("pk"), newest_timestamp=Max(self.timestamp_column))
+        hash_string = "{pk__count}{newest_timestamp}".format(**agg)
+        return md5(hash_string.encode()).hexdigest()
 
 
 class ModelTimeStampedFingerprint(TimeStampedFingerprint):
@@ -244,16 +236,9 @@ class ModelTimeStampedFingerprint(TimeStampedFingerprint):
         self.table_time_cache_key = f"{self.time_cache_key}_table"
 
     def _get_table_fingerprint(self):
-        ordered_query = self.query.order_by(self.timestamp_column)
-        last_updated = ordered_query.last()
-        if not last_updated:
-            logger.debug("Empty query")
-            return utcnow()
-        last_timestamp = getattr(last_updated, self.timestamp_column)  # type: Union[datetime.date, datetime.datetime]
-        # Expect a `isoformat` on this field
-        stamp = last_timestamp.isoformat()
-        logger.debug(stamp)
-        return stamp
+        agg = self.model.objects.aggregate(Count("pk"), newest_timestamp=Max(self.timestamp_column))
+        hash_string = "{pk__count}{newest_timestamp}".format(**agg)
+        return md5(hash_string.encode()).hexdigest()
 
     @property
     def _cached_table_fingerprint(self):
