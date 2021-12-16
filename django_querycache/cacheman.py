@@ -101,22 +101,31 @@ def get_query_cache(cache_alias: str = "default"):
         return default_cache
 
 
-class RowHash(Func):
+class RowFullHash(Func):
     """
     Trick to return the md5 hash of a whole postgres row
     """
 
     function = "MD5"
-    template = 'substring(%(function)s("%(table)s"::text) from 0 for 8)'
+    template = '%(function)s("%(table)s"::text)'
     output_field = models.TextField()  # type: models.Field[Any, Any]
 
 
-class SomeColsHash(RowHash):
+class RowHash(RowFullHash):
+    """
+    Trick to return the md5 hash of a whole postgres row.
+    This returns the md5 hash, truncated to 8 characters for easier handling.
+    """
+
+    template = 'substring(%(function)s("%(table)s"::text) for 8)'
+
+
+class SomeColsFullHash(RowFullHash):
     """
     Trick to return the md5sum of only some columns
     """
 
-    template = "substring(%(function)s(%(expressions)s) from 0 for 8)"
+    template = "substring(%(function)s(%(expressions)s) for 8)"
 
     def as_sql(self, compiler, connection, function=None, template=None, arg_joiner="||", **extra_context):
         """
@@ -138,6 +147,15 @@ class SomeColsHash(RowHash):
         arg_joiner = arg_joiner or data.get("arg_joiner", self.arg_joiner)
         data["expressions"] = data["field"] = arg_joiner.join(sql_parts)
         return template % data, params
+
+
+class SomeColsHash(SomeColsFullHash):
+    """
+    Trick to return the md5sum of only some columns. This returns the
+    md5 hash, truncated to 8 characters for easier handling.
+    """
+
+    template = "substring(%(function)s(%(expressions)s) from 0 for 8)"
 
 
 class Fingerprinting:
@@ -168,6 +186,7 @@ class Fingerprinting:
         hashfields: Optional[Iterable[Union[str, F]]] = (),
         fingerprint_expiry: int = 30,
         time_cache_key: Optional[str] = None,
+        long_hash: Optional[bool] = False,
         **kwargs,
     ):
         # Permit either a whole Model or a given Query to be used
@@ -180,14 +199,23 @@ class Fingerprinting:
         self.cache_key = cache_key or query_to_key(self.query, "_hash")
         self.time_cache_key = time_cache_key or f"{self.cache_key}_set_time"
         self.fingerprint_expiry = fingerprint_expiry or 30
+        self.long_hash = long_hash
 
         # Depending on whether certain rows are to be used or not
         # the hash function will be an md5 of whole table
-        # or only some columns
+        # or only some columns. The md5 sum can optionally return a "full" hash
+        # or a truncated 8 character hash (default)
         if hashfields:
-            self.fingerprint: RowHash = SomeColsHash(*hashfields)
+            if long_hash:
+                self.fingerprint: Func = SomeColsFullHash(*hashfields)
+            else:
+                self.fingerprint = SomeColsHash(*hashfields)
+
         else:
-            self.fingerprint = RowHash(table=self.model._meta.db_table)
+            if long_hash:
+                self.fingerprint = RowFullHash(table=self.model._meta.db_table)
+            else:
+                self.fingerprint = RowHash(table=self.model._meta.db_table)
 
     @property
     def _cached_fingerprint(self):
@@ -252,9 +280,9 @@ class Fingerprinting:
             a and b are len 8 hex strings
             Note that 'x' = lowercase hex format
             """
-            return ("%X" % (int(a, 16) ^ int(b, 16))).zfill(8)
+            return ("%X" % (int(a, 16) ^ int(b, 16))).zfill(len(a))
 
-        return reduce(hexxor, row_fingerprints(), "00000000")
+        return reduce(hexxor, row_fingerprints(), "0" * (32 if self.long_hash else 8))
 
     def update_required(self, force_check=False) -> bool:
         """
