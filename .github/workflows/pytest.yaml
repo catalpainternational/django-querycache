@@ -238,6 +238,9 @@ jobs:
             - name: Run Tests
               run: poetry run coverage run django_querycache/runtests.py
 
+            - name: Produce coverage XML
+              run: poetry run coverage xml
+
             - name: "Upload coverage to Codecov"
               uses: codecov/codecov-action@v2
               with:
