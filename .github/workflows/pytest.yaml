@@ -236,7 +236,15 @@ jobs:
                   sudo apt-get install binutils libproj-dev gdal-bin python3-psycopg2
 
             - name: Run Tests
-              run: poetry run django_querycache/runtests.py
+              run: poetry run coverage run django_querycache/runtests.py
+
+            - name: Produce coverage XML
+              run: poetry run coverage xml
+
+            - name: "Upload coverage to Codecov"
+              uses: codecov/codecov-action@v2
+              with:
+                fail_ci_if_error: true
 
             # Service containers to run postgres
         services:
