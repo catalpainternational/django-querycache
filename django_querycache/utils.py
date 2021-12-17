@@ -7,7 +7,8 @@ from django.apps import apps
 from django.core.cache import cache as default_cache
 from django.core.cache import caches
 from django.db.models import Model, QuerySet
-from type_annotations import InputModel
+
+from django_querycache.type_annotations import InputModel
 
 logger = logging.getLogger(__name__)
 

@@ -13,9 +13,10 @@ from typing import Any, Dict, Iterable, List, Optional, Type, Union
 from django.core.cache import caches
 from django.core.cache.backends.dummy import DummyCache
 from django.db.models import F, Model
-from fingerprinting import Fingerprinting, TimeStampedFingerprint
-from type_annotations import Feature, InputModel
-from utils import get_query_cache, inputmodel_parse, query_to_key
+
+from django_querycache.fingerprinting import Fingerprinting, TimeStampedFingerprint
+from django_querycache.type_annotations import Feature, InputModel
+from django_querycache.utils import get_query_cache, inputmodel_parse, query_to_key
 
 logger = logging.getLogger(__name__)
 
