@@ -1,5 +1,7 @@
 # django-querycache
 
+[![codecov](https://codecov.io/gh/catalpainternational/django-querycache/branch/main/graph/badge.svg?token=N3wVm3FVoc)](https://codecov.io/gh/catalpainternational/django-querycache)
+
 Cache manager for Django querysets / serialization
 
 This combines Django's cache mechanism, a queryset / model and a serialization format, in order that you don't need to query or serialize data which is (according to either timestamp or MD5 sum of the rows in your query) unchanged
