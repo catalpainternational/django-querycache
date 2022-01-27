@@ -3,13 +3,14 @@ import logging
 # Create your tests here.
 from time import sleep
 
-from django_querycache.cacheman import CachedQuerySet, GeoJsonCachedQuerySet
 from django.core.cache import cache
 from django.db.models import Func, JSONField
 from django.test import TestCase
+from tests.models import ModelOfRandomness, ModelOfRandomnessWithLastUpdated
+
+from django_querycache.cacheman import CachedQuerySet, GeoJsonCachedQuerySet
 from django_querycache.fingerprinting import Fingerprinting, ModelTimeStampedFingerprint
 from django_querycache.hashfunctions import RowHash, SomeColsHash
-from tests.models import ModelOfRandomness, ModelOfRandomnessWithLastUpdated
 
 logger = logging.getLogger(__name__)
 

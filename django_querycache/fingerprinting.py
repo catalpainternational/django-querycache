@@ -9,19 +9,9 @@ from django.core.cache.backends.dummy import DummyCache
 from django.db.models import F, Func
 from django.db.models.aggregates import Count, Max
 
-from .hashfunctions import (
-    RowFullHash,
-    RowHash,
-    SomeColsFullHash,
-    SomeColsHash,
-)
+from .hashfunctions import RowFullHash, RowHash, SomeColsFullHash, SomeColsHash
 from .type_annotations import InputModel, hstring
-from .utils import (
-    get_query_cache,
-    inputmodel_parse,
-    query_to_key,
-    utcnow,
-)
+from .utils import get_query_cache, inputmodel_parse, query_to_key, utcnow
 
 logger = logging.getLogger(__name__)
 
