@@ -1,7 +1,7 @@
 import datetime
 import logging
 from hashlib import md5
-from typing import Optional, Tuple
+from typing import Optional, Sequence, Tuple
 
 from django.apps import apps
 from django.core.cache import cache as default_cache
@@ -93,16 +93,16 @@ def get_ts_field(inputthing: InputModel) -> Optional[Field]:
     A Field instance where "auto_now" is true
     """
     _, model = inputmodel_parse(inputthing)
-    fields = model._meta.fields
+    fields = model._meta.fields  # type: Sequence[Field]
 
     for field in fields:
-        if hasattr(field, "auto_now") and field.auto_now is True:
+        if getattr(field, "auto_now", False):
             return field
     logger.warn("No timestamp column in: %s" % ([f.name for f in fields]))
     return None
 
 
-def last_modified_queryset(inputthing: InputModel) -> str:
+def last_modified_queryset(inputthing: InputModel) -> Optional[str]:
     """
     Returns a [Last-Modified](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Last-Modified) header
     content for the current queryset, if there is an `auto_now` field present on the model
@@ -115,3 +115,4 @@ def last_modified_queryset(inputthing: InputModel) -> str:
         )
         if dt:
             return dt.strftime(time_format)
+    return None

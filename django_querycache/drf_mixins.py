@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Tuple
+from typing import Any, Tuple, Protocol
 
 from django.db.models import QuerySet
 
@@ -12,17 +12,31 @@ except ModuleNotFoundError:
     raise ModuleNotFoundError("Django rest framework is required for this feature")
 
 
+class ViewsetProto(Protocol):
+    def filter_queryset(self, qs: QuerySet) -> QuerySet:
+        ...
+    def get_queryset(self) -> QuerySet:
+        ...
+    @property
+    def serializer_class(self) -> Any:
+        ...
+
 class AddHeadersMixin:
-    def _add_headers(self, object=None) -> Tuple[Tuple[str, str]]:
-        queryset = self.filter_queryset(self.get_queryset())
+    def _add_headers(self:ViewsetProto, object=None) -> Tuple[Tuple[str, str], ...]:
+        queryset = self.filter_queryset(self.get_queryset())  # type: QuerySet
         if object:
             queryset = queryset.filter(pk=object.pk)
 
         last_modified = last_modified_queryset(queryset)
         etag = Fingerprinting(query=queryset, hashfields=self.serializer_class.Meta.fields).query_fingerprint()
-        headers: Tuple[Tuple[str, str]] = (("Last-Modified", last_modified), ("ETag", etag))
 
-        return headers
+        headers = []
+        if last_modified:
+            headers.append(("Last-Modified", last_modified))
+        if etag:
+            headers.append(("ETag", etag))
+
+        return tuple(headers)
 
 
 class ListHeadersMixin:
@@ -59,13 +73,14 @@ class RetrieveHeadersMixin:
 class ModelViewSetHeaders(AddHeadersMixin, ListHeadersMixin, RetrieveHeadersMixin):
     """
     Class modifies the "list" and "retrieve" actions
-    to generate an ETag and Last-Modified. If there 
+    to generate an ETag and Last-Modified. If there
     are no changes a 304 response is returned.
 
     To use this class, add it as the first superclass
     to a Viewset. For instance:
-    
+
     >>> class SIPRequirementValuesViewSet(ModelViewSetHeaders, viewsets.ModelViewSet):
-    
+
     """
+
     pass
