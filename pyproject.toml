@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-querycache"
-version = "0.2.2"
+version = "0.2.3"
 description = "Cache manager for Django querysets and serialization"
 authors = ["Joshua Brooks <josh.vdbroek@gmail.com>"]
 license = "GPLv3"
