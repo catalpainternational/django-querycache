@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any, Tuple, Protocol
+from typing import Any, Protocol, Tuple
 
 from django.db.models import QuerySet
 
