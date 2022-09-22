@@ -39,6 +39,12 @@ pre-commit install
 - Run `poetry build`
 - Run `poetry publish`
 
+### Auth
+
+You may need your API token from pypi, or generate one [from pypi](https://pypi.org/manage/account/token/). The api token will start with 'pypi'.
+
+`poetry publish --build --username __token__  --password pypi-AgE.........Q`
+
 You may need to be added as a contributor on pypi - if so please ask @joshbrooks to add you
 
 ##  Testing
