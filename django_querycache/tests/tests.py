@@ -11,6 +11,7 @@ from tests.models import ModelOfRandomness, ModelOfRandomnessWithLastUpdated
 from django_querycache.cacheman import CachedQuerySet, GeoJsonCachedQuerySet
 from django_querycache.fingerprinting import Fingerprinting, ModelTimeStampedFingerprint
 from django_querycache.hashfunctions import RowHash, SomeColsHash
+from django_querycache.utils import get_ts_field, last_modified_queryset
 
 logger = logging.getLogger(__name__)
 
@@ -93,6 +94,21 @@ class TimedTestCase(TestCase):
     def setUp(self):
         for n in range(5):
             ModelOfRandomnessWithLastUpdated().save()
+
+    def test_get_ts_field(self):
+        """
+        Calling this on a model or queryset should
+        return None or a field with `auto_now` if present
+        """
+        self.assertIsNone(get_ts_field(ModelOfRandomness))
+        self.assertEqual(get_ts_field(ModelOfRandomnessWithLastUpdated).name, "last_updated")
+
+    def test_last_modified_queryset(self):
+        self.assertIsNone(last_modified_queryset(ModelOfRandomness))
+        self.assertIsNone(last_modified_queryset(ModelOfRandomness.objects.all()))
+
+        self.assertTrue(isinstance(last_modified_queryset(ModelOfRandomnessWithLastUpdated), str))
+        self.assertTrue(isinstance(last_modified_queryset(ModelOfRandomnessWithLastUpdated.objects.all()), str))
 
     def test_timestampedfingerprint_raises(self):
         """
