@@ -49,7 +49,18 @@ From the root directory run tests with
 poetry run django_querycache/runtests.py
 ```
 
-This uses the test setting in `tests`. You may wish to set an env variable for a different settings if you want to use a different setup (note tests use the postgis container specified in the github actions
+This uses the test setting in `tests`. You may wish to set an env variable for a different settings if you want to use a different setup (note tests use the postgis container specified in the github actions)
+
+To run the container as specified in the actions, run a postgres container on 49158 with password `post1233`
+
+```sh
+docker run \
+    --rm \
+    -p 49158:5432 \
+    -e POSTGRES_PASSWORD="post1233" \
+    postgis/postgis:12-3.1 \
+    -c fsync=off
+```
 
 ### Github Actions
 
