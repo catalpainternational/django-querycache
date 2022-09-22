@@ -15,14 +15,17 @@ except ModuleNotFoundError:
 class ViewsetProto(Protocol):
     def filter_queryset(self, qs: QuerySet) -> QuerySet:
         ...
+
     def get_queryset(self) -> QuerySet:
         ...
+
     @property
     def serializer_class(self) -> Any:
         ...
 
+
 class AddHeadersMixin:
-    def _add_headers(self:ViewsetProto, object=None) -> Tuple[Tuple[str, str], ...]:
+    def _add_headers(self: ViewsetProto, object=None) -> Tuple[Tuple[str, str], ...]:
         queryset = self.filter_queryset(self.get_queryset())  # type: QuerySet
         if object:
             queryset = queryset.filter(pk=object.pk)
