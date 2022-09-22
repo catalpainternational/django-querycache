@@ -31,7 +31,7 @@ class AddHeadersMixin:
             queryset = queryset.filter(pk=object.pk)
 
         last_modified = last_modified_queryset(queryset)
-        etag = Fingerprinting(query=queryset, hashfields=self.serializer_class.Meta.fields).query_fingerprint()
+        etag = Fingerprinting(query=queryset, hashfields=self.serializer_class.Meta.fields if self.serializer_class.Meta.fields != "__all__" else () ).query_fingerprint()
 
         headers = []
         if last_modified:
