@@ -1,12 +1,12 @@
 import datetime
 import logging
 from hashlib import md5
-from typing import Tuple
+from typing import Optional, Tuple
 
 from django.apps import apps
 from django.core.cache import cache as default_cache
 from django.core.cache import caches
-from django.db.models import Model, QuerySet
+from django.db.models import Field, Model, QuerySet
 
 from .type_annotations import InputModel
 
@@ -80,3 +80,38 @@ def inputmodel_parse(inputthing: InputModel) -> Tuple[QuerySet, Model]:
         query = _m.objects.all()  # type: QuerySet
         return query, _m  # type: ignore
     raise TypeError(f"Could not determine the model or queryset from {inputthing}")
+
+
+def get_ts_field(inputthing: InputModel) -> Optional[Field]:
+    """
+    Parameters
+    ----------
+    inputmodel
+        One of: model, queryset, tuple
+    Returns
+    -------
+    A Field instance where "auto_now" is true
+    """
+    _, model = inputmodel_parse(inputthing)
+    fields = model._meta.fields
+
+    for field in fields:
+        if hasattr(field, "auto_now") and field.auto_now is True:
+            return field
+    logger.warn("No timestamp column in: %s" % ([f.name for f in fields]))
+    return None
+
+
+def last_modified_queryset(inputthing: InputModel) -> str:
+    """
+    Returns a [Last-Modified](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Last-Modified) header
+    content for the current queryset, if there is an `auto_now` field present on the model
+    """
+    queryset, _ = inputmodel_parse(inputthing)
+    time_format = "%a, %d %b %Y %H:%M:%S"  # Should correspond to the "Last-Modified" header docs
+    if ts_field := get_ts_field(inputthing):
+        dt: Optional[datetime.datetime] = (
+            queryset.order_by(f"-{ts_field.name}").values_list(ts_field.name, flat=True).first()
+        )
+        if dt:
+            return dt.strftime(time_format)
