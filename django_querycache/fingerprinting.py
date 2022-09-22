@@ -11,7 +11,7 @@ from django.db.models.aggregates import Count, Max
 
 from .hashfunctions import RowFullHash, RowHash, SomeColsFullHash, SomeColsHash
 from .type_annotations import InputModel, hstring
-from .utils import get_query_cache, inputmodel_parse, query_to_key, utcnow
+from .utils import get_query_cache, get_ts_field, inputmodel_parse, query_to_key, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -201,10 +201,8 @@ class TimeStampedFingerprint(Fingerprinting):
         if "timestamp_column" in kwargs:
             self.timestamp_column = kwargs.pop("timestamp_column")
         else:
-            for field in self.model._meta.fields:
-                if hasattr(field, "auto_now") and field.auto_now is True:
-                    self.timestamp_column = field.name
-                    break
+            if field := get_ts_field(self.model):
+                self.timestamp_column = field.name
         if not self.timestamp_column:
             raise ValueError("No timestamp column")
         logger.debug("using %s as timestamp column", self.timestamp_column)
