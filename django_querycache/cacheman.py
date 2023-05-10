@@ -47,7 +47,7 @@ class CachedQuerySet:
         self,
         query: InputModel,
         fp: Optional[Fingerprinting] = None,
-        cache_key: str = None,
+        cache_key: Optional[str] = None,
         query_values: Iterable[Union[str, F]] = (),
         **kwargs,
     ):

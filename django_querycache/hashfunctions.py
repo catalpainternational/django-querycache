@@ -1,4 +1,5 @@
 import logging
+from typing import Any  # noqa:F401
 
 from django.db import models
 from django.db.models.expressions import Func
