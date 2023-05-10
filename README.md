@@ -47,7 +47,7 @@ You may need your API token from pypi, or generate one [from pypi](https://pypi.
 
 You may need to be added as a contributor on pypi - if so please ask @joshbrooks to add you
 
-##  Testing
+## Testing
 
 From the root directory run tests with
 
