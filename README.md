@@ -47,12 +47,12 @@ You may need your API token from pypi, or generate one [from pypi](https://pypi.
 
 You may need to be added as a contributor on pypi - if so please ask @joshbrooks to add you
 
-##  Testing
+## Testing
 
 From the root directory run tests with
 
 ```bash
-poetry run django_querycache/runtests.py
+poetry run runtests.py
 ```
 
 This uses the test setting in `tests`. You may wish to set an env variable for a different settings if you want to use a different setup (note tests use the postgis container specified in the github actions)
@@ -64,7 +64,7 @@ docker run \
     --rm \
     -p 49158:5432 \
     -e POSTGRES_PASSWORD="post1233" \
-    postgis/postgis:12-3.1 \
+    postgis/postgis:14-3.2\
     -c fsync=off
 ```
 
