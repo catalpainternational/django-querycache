@@ -51,7 +51,6 @@ class CachedQuerySet:
         query_values: Iterable[Union[str, F]] = (),
         **kwargs,
     ):
-
         self.cache = get_query_cache(kwargs.get("cache_alias", "default"))
         self._cache_is_dummy = isinstance(caches["default"], DummyCache)
 

@@ -93,7 +93,7 @@ def get_ts_field(inputthing: InputModel) -> Optional[Field]:
     A Field instance where "auto_now" is true
     """
     _, model = inputmodel_parse(inputthing)
-    fields = model._meta.fields  # type: Sequence[Field]
+    fields: Sequence[Field] = model._meta.fields
 
     for field in fields:
         if getattr(field, "auto_now", False):

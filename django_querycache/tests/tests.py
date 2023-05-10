@@ -22,7 +22,6 @@ class SomeTestCase(TestCase):
             ModelOfRandomness().save()
 
     def test_fingerprint(self):
-
         # A fingerprint can be generated from a model
         fp_from_model = Fingerprinting(ModelOfRandomness)
 
